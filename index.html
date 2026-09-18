@@ -161,9 +161,33 @@
       border-radius: 12px;
       margin-bottom: 1.5rem;
       border: 1px solid rgba(255, 255, 255, 0.05);
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .user-tag { display: flex; align-items: center; gap: 8px; font-weight: 600; }
     .user-tag i { color: var(--accent); }
+    
+    /* Đồng hồ đếm ngược */
+    .timer-tag {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timer-tag.warning {
+      animation: pulse-danger 1s infinite alternate;
+    }
+    @keyframes pulse-danger {
+      from { background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 0px var(--danger); }
+      to { background: rgba(239, 68, 68, 0.4); box-shadow: 0 0 12px var(--danger); }
+    }
+
     .warning-tag { color: var(--danger); font-weight: 700; display: flex; align-items: center; gap: 6px; }
 
     /* Progress Bar */
@@ -313,6 +337,10 @@
         <i class="fa-solid fa-user-check"></i>
         <span id="user-info">Học sinh: ...</span>
       </div>
+      <!-- Hiển thị đồng hồ đếm ngược -->
+      <div class="timer-tag" id="timer-box">
+        <i class="fa-solid fa-clock"></i> <span id="timer">20:00</span>
+      </div>
       <div class="warning-tag" id="warning-badge"></div>
     </div>
 
@@ -360,6 +388,11 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSrOIW6kkN2EC7tIUgF0Rgzf1Yho4XGr8IOy0lzVS-7OzafkiFbVqIX7H79zg-iXAf/exec";
 
   let currentUser = {}, questions = [], answers = {}, currentQIndex = 0, tabSwitchCount = 0;
+  
+  // Các biến quản lý thời gian làm bài (20 phút = 1200 giây)
+  let timeLeft = 20 * 60;
+  let timerInterval = null;
+  let isSubmitted = false;
 
   async function login() {
     const u = document.getElementById("username").value.trim();
@@ -382,7 +415,6 @@
   async function loadQuestions() {
     try {
       const raw = await fetch(`${SCRIPT_URL}?action=getQuestions`).then(r => r.json());
-      // Thuật toán xáo trộn đề câu hỏi (Fisher-Yates Shuffle)
       questions = raw.sort(() => Math.random() - 0.5);
       
       document.getElementById("login-card").classList.add("hidden");
@@ -391,7 +423,37 @@
       renderGrid();
       showQuestion(0);
       initAntiCheat();
+      startTimer(); // Bắt đầu tính giờ ngay khi tải xong câu hỏi
     } catch(e) { alert("Không thể tải danh sách câu hỏi từ Google Sheet!"); }
+  }
+
+  // HÀM QUẢN LÝ ĐỒNG HỒ ĐẾM NGƯỢC
+  function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+
+      // Cảnh báo khi còn dưới 3 phút (180s)
+      if (timeLeft <= 180) {
+        document.getElementById("timer-box").classList.add("warning");
+      }
+
+      // Hết giờ làm bài -> Tự động nộp bài
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        alert("⏰ HẾT GIỜ LÀM BÀI!\nHệ thống sẽ tự động gửi bài thi của bạn.");
+        submitQuiz("Tự động nộp bài do hết thời gian (20 phút)");
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    document.getElementById("timer").innerText = `${formattedMinutes}:${formattedSeconds}`;
   }
 
   function showQuestion(index) {
@@ -452,7 +514,7 @@
   // CƠ CHẾ CHỐNG GIAN LẬN THOÁT MÀN HÌNH
   function initAntiCheat() {
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
+      if (document.hidden && !isSubmitted) {
         tabSwitchCount++;
         if (tabSwitchCount === 1) {
           alert("⚠️ CẢNH BÁO VI PHẠM:\nBạn vừa rời khỏi màn hình làm bài! Tái phạm lần 2 hệ thống sẽ tự động nộp bài.");
@@ -465,6 +527,12 @@
   }
 
   async function submitQuiz(note = "Thành công") {
+    if (isSubmitted) return; // Tránh nộp bài trùng lặp
+    isSubmitted = true;
+
+    // Dừng bộ đếm thời gian
+    if (timerInterval) clearInterval(timerInterval);
+
     let correctCount = 0;
     questions.forEach((q, idx) => {
       if (answers[idx] === q.correct) correctCount++;
