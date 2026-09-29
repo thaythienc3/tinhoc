@@ -295,7 +295,7 @@
   <!-- 1. MÀN HÌNH ĐĂNG NHẬP -->
   <div id="login-card" class="card-3d">
     <div class="header-banner">
-      <h1>HỆ THỐNG KIỂM TRA KHỐI 10</h1>
+      <h1>HỆ THỐNG KIỂM TRA KHỐI 12</h1>
       <p><i class="fa-solid fa-graduation-cap"></i> Thầy Thiện - THPT Lê Duẩn - Tây Ninh</p>
     </div>
 
@@ -310,7 +310,7 @@
     </div>
 
     <button class="btn-3d" id="login-btn" onclick="login()">
-      <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP BẮT ĐẦU BÀI THI
+      <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP BẮT ĐẦU BÀI KIỂM TRA
     </button>
   </div>
 
@@ -342,7 +342,7 @@
     <div class="q-grid" id="q-grid"></div>
 
     <button class="btn-3d" id="submit-btn" onclick="submitQuiz('Nộp bài tự nguyện')">
-      <i class="fa-solid fa-paper-plane"></i> HOÀN THÀNH & NỘP BÀI
+      <i class="fa-solid fa-paper-plane"></i> NỘP BÀI
     </button>
   </div>
 
@@ -350,7 +350,7 @@
   <div id="result-card" class="card-3d hidden">
     <div class="header-banner">
       <h1>TRƯỜNG THPT LÊ DUẨN - TÂY NINH</h1>
-      <p>KẾT QUẢ BÀI THI TRẮC NGHIỆM CỦA HỌC SINH</p>
+      <p>KẾT QUẢ BÀI KIỂM TRA TRẮC NGHIỆM CỦA HỌC SINH</p>
     </div>
 
     <div class="result-box">
@@ -368,7 +368,7 @@
 
 <script>
   // Cấu hình URL Google Apps Script
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXOyuiYzUdd7cpLfGcGOwYskb42oC7SygTLLx5iPrwUMbkQPBDZU1fY0J-A1-r0sx1/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQHsfMNZGkjctPSJQRYb_DJIMsJVzMQFmXSJCinuYPFAHZRN7YfCA_toe3kQbsLDFw3A/exec";
 
   let currentUser = {}, questions = [], answers = {}, currentQIndex = 0, tabSwitchCount = 0;
   let timeLeft = 20 * 60;
