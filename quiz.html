@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đấu Trường Trắc Nghiệm - Gameshow</title>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .game-container { width: 900px; background: #1e293b; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 30px; border: 3px solid #3b82f6; position: relative; }
+        .header-info { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom: 20px; }
+        .timer-box { font-size: 28px; font-weight: bold; background: #ef4444; padding: 5px 20px; border-radius: 50px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+        .progress-bar-container { width: 100%; background: #334155; height: 12px; border-radius: 6px; margin-bottom: 25px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #10b981; width: 0%; transition: width 0.5s linear; }
+        .question-text { font-size: 24px; font-weight: bold; margin-bottom: 30px; min-height: 70px; line-height: 1.4; color: #f8fafc; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .option-btn { background: #334155; border: 2px solid #475569; padding: 20px; border-radius: 12px; font-size: 18px; color: white; cursor: pointer; text-align: left; transition: 0.2s; font-weight: bold; }
+        .option-btn:hover { background: #475569; border-color: #60a5fa; transform: translateY(-2px); }
+        .option-btn.selected { background: #2563eb; border-color: #93c5fd; box-shadow: 0 0 15px rgba(37, 99, 235, 0.6); }
+        .warning-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="quiz-box">
+        <div class="header-info">
+            <div>
+                <h3 id="student-name" style="margin:0; color:#38bdf8;">Học sinh: ...</h3>
+                <span id="question-tracker" style="color:#94a3b8; font-size: 14px;">Câu hỏi 1 / 20</span>
+            </div>
+            <div class="timer-box" id="timer">50s</div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+
+        <div class="question-text" id="question">Đang tải câu hỏi từ hệ thống...</div>
+
+        <div class="options-grid" id="options">
+            <!-- Đáp án A, B, C, D -->
+        </div>
+    </div>
+
+    <!-- Màn hình hiển thị kết quả cuối cùng -->
+    <div class="game-container" id="result-box" style="display: none; text-align: center;">
+        <h1 style="color: #facc15; font-size: 40px;">🏆 KẾT QUẢ BÀI THI GAMESHOW</h1>
+        <h2 id="res-name"></h2>
+        <p style="font-size: 24px;">Số câu trả lời đúng: <span id="res-correct" style="color: #4ade80;">0</span> / 20</p>
+        <p style="font-size: 32px; font-weight: bold;">Tổng điểm: <span id="res-score" style="color: #38bdf8;">0</span> điểm</p>
+        <p style="color: #94a3b8;">Kết quả của bạn đã được hệ thống lưu tự động lên Google Sheets!</p>
+    </div>
+
+    <!-- Cảnh báo chống gian lận -->
+    <div class="warning-overlay" id="warning-screen">
+        <h1 style="color: #ef4444; font-size: 40px;">⚠️ CẢNH BÁO GIAN LẬN!</h1>
+        <p id="warning-msg" style="font-size: 22px; text-align: center; max-width: 600px;"></p>
+        <button onclick="dismissWarning()" style="padding: 15px 30px; font-size: 18px; background: #3b82f6; border:none; color:white; border-radius:8px; cursor:pointer; margin-top:20px;">TÔI ĐÃ HIỂU VÀ QUAY LẠI THI</button>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbw896OgbCk16JJBN3heyOZ26N1OwaLTNhGnzkb7b1dNCTBDL06McnL3dW0yp5nwkxFI_Q/exec";
+        let questions = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+        let timeLeft = 50;
+        let timerInterval;
+        let cheatCount = 0;
+
+        document.getElementById('student-name').innerText = "Học sinh: " + localStorage.getItem("fullName");
+
+        async function loadQuiz() {
+            let res = await fetch(`${API_URL}?action=getQuiz`);
+            questions = await res.json();
+            startQuestion();
+        }
+
+        function startQuestion() {
+            if (currentIndex >= questions.length) {
+                submitQuiz();
+                return;
+            }
+
+            // Reset thời gian 50 giây cho câu hỏi mới
+            timeLeft = 50;
+            document.getElementById('timer').innerText = timeLeft + "s";
+            document.getElementById('progress').style.width = ((currentIndex + 1) / questions.length * 100) + "%";
+            document.getElementById('question-tracker').innerText = `Câu hỏi ${currentIndex + 1} / ${questions.length}`;
+
+            let q = questions[currentIndex];
+            document.getElementById('question').innerText = q.question;
+
+            let optHtml = '';
+            for (let key in q.options) {
+                let isSelected = userAnswers[q.id] === key ? 'selected' : '';
+                optHtml += `<button class="option-btn ${isSelected}" onclick="selectOption('${q.id}', '${key}')"><b>${key}.</b> ${q.options[key]}</button>`;
+            }
+            document.getElementById('options').innerHTML = optHtml;
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft + "s";
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    currentIndex++;
+                    startQuestion(); // Tự động chuyển câu sau 50 giây
+                }
+            }, 1000);
+        }
+
+        function selectOption(qId, optionKey) {
+            userAnswers[qId] = optionKey;
+            // Highlight đáp án vừa chọn
+            let buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        async function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] && userAnswers[q.id] === q.correct) {
+                    correctCount++;
+                }
+            });
+            let score = correctCount * 5; // Thang điểm 100 (20 câu * 5 điểm)
+
+            // Ẩn bảng câu hỏi, hiện bảng kết quả
+            document.getElementById('quiz-box').style.display = 'none';
+            document.getElementById('result-box').style.display = 'block';
+            document.getElementById('res-name').innerText = localStorage.getItem("fullName");
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-score').innerText = score;
+
+            // Gửi dữ liệu điểm số lên Google Sheets thông qua Apps Script
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "submitResult",
+                    username: localStorage.getItem("user"),
+                    fullName: localStorage.getItem("fullName"),
+                    score: score,
+                    totalCorrect: correctCount
+                })
+            });
+        }
+
+        // --- CƠ CHẾ CHỐNG GIAN LẬN (BLUR / SWITCH TAB) ---
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                cheatCount++;
+                if (cheatCount === 1) {
+                    document.getElementById('warning-msg').innerText = "Cảnh cáo lần 1: Bạn đã rời khỏi màn hình làm bài thi! Vi phạm lần tiếp theo bài thi sẽ bị tự động nộp và nhận 0 điểm.";
+                    document.getElementById('warning-screen').style.display = 'flex';
+                } else if (cheatCount >= 2) {
+                    alert("Bạn đã vi phạm quy chế thi 2 lần. Hệ thống tự động nộp bài!");
+                    submitQuiz();
+                }
+            }
+        });
+
+        function dismissWarning() {
+            document.getElementById('warning-screen').style.display = 'none';
+        }
+
+        // Khởi chạy hệ thống tải câu hỏi
+        loadQuiz();
+    </script>
+</body>
+</html>
