@@ -2,59 +2,323 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng Nhập - Gameshow Trắc Nghiệm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HẸ THỐNG TRẮC NGHIỆM THẦY THIỆN</title>
+    <!-- Nhập Font chữ hiện đại và Thư viện Icons FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72, #2a52be); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; color: white; }
-        .login-card { background: rgba(255, 255, 255, 0.1); padding: 40px; border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.2); color: white; font-size: 16px; outline: none; box-sizing: border-box;}
-        input::placeholder { color: #ddd; }
-        button { width: 100%; padding: 12px; background: #ff9800; border: none; border-radius: 5px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #e68900; }
-        .error { color: #ff5252; margin-top: 10px; font-size: 14px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Hiệu ứng nền 3D Trừu tượng */
+        .bg-shapes div {
+            position: absolute;
+            filter: blur(80px);
+            z-index: 1;
+            opacity: 0.4;
+            animation: float 10s infinite alternate ease-in-out;
+        }
+        .shape-1 { width: 350px; height: 350px; background: #3b82f6; top: -10%; left: -10%; border-radius: 50%; }
+        .shape-2 { width: 400px; height: 400px; background: #8b5cf6; bottom: -10%; right: -10%; border-radius: 50%; animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(30px) rotate(15deg); }
+        }
+
+        /* Khung đăng nhập 3D Glassmorphism */
+        .login-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
+        }
+
+        /* Header Logo & Icon */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .icon-box {
+            width: 75px;
+            height: 75px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px auto;
+            font-size: 32px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+            transform: translateZ(30px);
+        }
+
+        .brand-header h1 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            transform: translateZ(20px);
+        }
+
+        .brand-header p {
+            color: #94a3b8;
+            font-size: 14px;
+            transform: translateZ(10px);
+        }
+
+        /* Input Group 3D */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            transform: translateZ(15px);
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .input-field:focus + i {
+            color: #3b82f6;
+        }
+
+        .input-field::placeholder {
+            color: #64748b;
+        }
+
+        /* Nút Đăng Nhập 3D Hiệu Ứng */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+            transform: translateZ(25px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.6);
+            transform: translateY(-2px) translateZ(25px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px) translateZ(25px);
+        }
+
+        /* Thông báo lỗi */
+        .error-msg {
+            color: #f87171;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+            transform: translateZ(10px);
+        }
+
+        /* Trạng thái chờ phòng */
+        .waiting-box {
+            text-align: center;
+            transform: translateZ(20px);
+        }
+
+        .waiting-box h2 {
+            color: #38bdf8;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .waiting-box p {
+            color: #cbd5e1;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h2>🎮 ĐẤU TRƯỜNG TRẮC NGHIỆM</h2>
-        <input type="text" id="username" placeholder="Mã tài khoản (Username)">
-        <input type="password" id="password" placeholder="Mật khẩu (Password)">
-        <button onclick="login()">VÀO PHÒNG CHỜ</button>
-        <div id="error" class="error"></div>
+
+    <!-- Các khối hình nền trừu tượng tạo chiều sâu -->
+    <div class="bg-shapes">
+        <div class="shape-1"></div>
+        <div class="shape-2"></div>
     </div>
+
+    <div class="login-wrapper">
+        <div class="login-card" id="card-content">
+            <div class="brand-header">
+                <div class="icon-box">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h1>ĐẤU TRƯỜNG TRI THỨC</h1>
+                <p>Hệ thống thi trắc nghiệm trực tuyến phong cách Gameshow</p>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="username" class="input-field" placeholder="Mã định danh học sinh (Username)">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" class="input-field" placeholder="Mật khẩu phòng thi (Password)">
+                <i class="fa-solid fa-lock-keyhole"></i>
+            </div>
+
+            <button class="btn-submit" onclick="login()">
+                <span>VÀO PHÒNG THI NGAY</span>
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+
+            <div id="error" class="error-msg"></div>
+        </div>
+    </div>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw896OgbCk16JJBN3heyOZ26N1OwaLTNhGnzkb7b1dNCTBDL06McnL3dW0yp5nwkxFI_Q/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzlu1N6He2-xIoEXKRf8rmEASZgBbpO-LuKqCDyRCNYxi54WImLUqfMeMhPwzOgP6AsKg/exec"; // Thay bằng URL Web App Google Apps Script của bạn
+
         async function login() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
-            if(!user || !pass) { document.getElementById('error').innerText = "Vui lòng nhập đầy đủ thông tin!"; return; }
+            const errDiv = document.getElementById('error');
+
+            if (!user || !pass) {
+                errDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Vui lòng nhập đầy đủ tài khoản và mật khẩu!';
+                return;
+            }
+
+            errDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác thực tài khoản...';
             
-            document.getElementById('error').innerText = "Đang kết nối...";
             try {
-                let res = await fetch(`${API_URL}?action=login&user=${user}&pass=${pass}`);
+                let res = await fetch(`${API_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
                 let data = await res.json();
-                if(data.status === "success") {
+
+                if (data.status === "success") {
                     localStorage.setItem("user", user);
                     localStorage.setItem("fullName", data.fullName);
+                    localStorage.setItem("sbd", data.sbd || "01");
                     
-                    // Chuyển sang trang phòng chờ kiểm tra trạng thái game
-                    checkGameRoom();
+                    // Chuyển sang giao diện phòng chờ 3D mượt mà
+                    showWaitingRoom(data.fullName);
                 } else {
-                    document.getElementById('error').innerText = "Sai tài khoản hoặc mật khẩu!";
+                    errDiv.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Sai tài khoản hoặc mật khẩu hệ thống!';
                 }
-            } catch(e) {
-                document.getElementById('error').innerText = "Lỗi kết nối hệ thống!";
+            } catch (e) {
+                errDiv.innerHTML = '<i class="fa-solid fa-wifi"></i> Lỗi kết nối đến máy chủ Google Sheets!';
             }
         }
 
-        async function checkGameRoom() {
-            document.body.innerHTML = `<div style="text-align:center"><h2>🎉 Đăng nhập thành công! Chào ${localStorage.getItem("fullName")}</h2><p>Đang chờ Quản trị viên mở phòng thi...</p><h1 id="countdown">⏳</h1></div>`;
+        function showWaitingRoom(fullName) {
+            const card = document.getElementById('card-content');
+            card.innerHTML = `
+                <div class="waiting-box">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h2>Xin chào, ${fullName}!</h2>
+                    <p>Đăng nhập thành công vào hệ thống. Vui lòng giữ nguyên màn hình và chờ Quản trị viên khởi động phòng thi.</p>
+                    <div class="spinner"></div>
+                    <p style="margin-top: 20px; font-size: 13px; color: #64748b;">Hệ thống tự động chuyển hướng khi bắt đầu...</p>
+                </div>
+            `;
+
+            // Vòng lặp kiểm tra trạng thái mở phòng từ Server
             setInterval(async () => {
-                let res = await fetch(`${API_URL}?action=getStatus`);
-                let status = await res.text();
-                if(status.trim() === "STARTED") {
-                    window.location.href = "quiz.html";
+                try {
+                    let res = await fetch(`${API_URL}?action=getState`);
+                    let stateData = await res.json();
+                    if (stateData.status === "STARTED") {
+                        window.location.href = "quiz.html";
+                    }
+                } catch (err) {
+                    console.log("Đang đồng bộ trạng thái phòng thi...");
                 }
-            }, 2000);
+            }, 3000);
         }
     </script>
 </body>

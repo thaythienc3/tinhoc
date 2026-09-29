@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sân Khấu Gameshow - Màn Hình LED</title>
+    <style>
+        body { margin: 0; background: radial-gradient(circle, #0f172a 0%, #020617 100%); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 40px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 20px; }
+        .logo-area img { height: 60px; }
+        .main-stage { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; height: 75vh; align-items: center; }
+        .question-panel { background: rgba(30, 41, 59, 0.8); border: 3px solid #3b82f6; border-radius: 20px; padding: 40px; box-shadow: 0 0 30px rgba(59, 130, 246, 0.4); display: flex; flex-direction: column; justify-content: space-between; height: 80%; }
+        .question-title { font-size: 32px; font-weight: bold; line-height: 1.4; color: #f8fafc; }
+        .timer-huge { font-size: 90px; font-weight: 900; color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); text-align: center; }
+        .students-panel { background: rgba(15, 23, 42, 0.9); border: 2px solid #475569; border-radius: 20px; padding: 20px; height: 80%; overflow-y: auto; }
+        .grid-students { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .student-badge { background: #10b981; padding: 10px 5px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: 0.3s; }
+        .student-badge.eliminated { background: #ef4444; opacity: 0.5; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-area">
+            <h2 style="margin:0; color:#38bdf8;">🏫 TRƯỜNG THPT LÊ DUẨN - TÂY NINH</h2>
+            <span style="color:#94a3b8; font-size: 18px;">| Đấu Trường tri thức - Năm học 2026-2027</span>
+        </div>
+        <div class="timer-huge" id="display-timer">50</div>
+    </div>
+
+    <div class="main-stage">
+        <div class="question-panel">
+            <div id="q-number" style="color: #facc15; font-size: 22px; font-weight: bold;">CÂU HỎI SỐ 1 / 20</div>
+            <div class="question-title" id="display-q">Đang chờ MC bắt đầu câu hỏi...</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 20px;" id="display-opts">
+                <!-- Đáp án -->
+            </div>
+        </div>
+
+        <div class="students-panel">
+            <h3 style="margin-top:0; text-align:center; color:#facc15;">👥 SƠ ĐỒ 50 THÍ SINH</h3>
+            <div class="grid-students" id="student-grid">
+                <!-- Tạo sẵn 50 SBD -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo danh sách 50 thí sinh trên màn hình sân khấu
+        const grid = document.getElementById('student-grid');
+        for(let i=1; i<=50; i++) {
+            grid.innerHTML += `<div class="student-badge" id="sbd-${i}">SBD ${i < 10 ? '0'+i : i}</div>`;
+        }
+        
+        // Âm thanh giả lập bằng Web Audio API (Không cần file nhạc ngoài)
+        function playSound(type) {
+            let ctx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = ctx.createOscillator();
+            let gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            if(type === 'beep') { osc.frequency.setValueAtTime(440, ctx.currentTime); }
+            else if(type === 'win') { osc.frequency.setValueAtTime(587.33, ctx.currentTime); }
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
+        }
+    </script>
+</body>
+</html>
